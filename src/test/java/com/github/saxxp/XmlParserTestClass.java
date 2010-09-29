@@ -1,6 +1,6 @@
-package com.github.smat.saxxp;
+package com.github.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
+import com.github.saxxp.annotation.ParseFromXmlWithXPath;
 
 public class XmlParserTestClass {
     @ParseFromXmlWithXPath("string")

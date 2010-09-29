@@ -1,8 +1,8 @@
-package com.github.smat.saxxp;
+package com.github.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlEnumIdentifier;
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.smat.saxxp.exception.XmlParserRuntimeException;
+import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
+import com.github.saxxp.annotation.ParseFromXmlWithXPath;
+import com.github.saxxp.exception.XmlParserRuntimeException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.github.smat.saxxp;
+package com.github.saxxp;
 
 import org.jdom.Element;
 
