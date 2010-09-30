@@ -2,7 +2,7 @@ package com.github.saxxp;
 
 import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.saxxp.exception.XmlParserRuntimeException;
+import com.github.saxxp.exception.XmlParserException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,32 +27,32 @@ public class XmlParserFactoryTest {
     }
 
     @Test
-    public void shouldParseInteger() {
+    public void shouldParseInteger() throws XmlParserException {
         testIfParsable(IntegerTestObj.class, 1);
     }
 
     @Test
-    public void shouldSetIntegerToZeroIfFieldIsEmpty() {
+    public void shouldSetIntegerToZeroIfFieldIsEmpty() throws XmlParserException {
         testIfParsable(IntegerTestObj.class, 0, "");
     }
 
     @Test
-    public void shouldParseFloat() {
+    public void shouldParseFloat() throws XmlParserException {
         testIfParsable(FloatTestObj.class, 1.0F);
     }
 
     @Test
-    public void shouldSetFloatToZeroIfFieldIsEmpty() {
+    public void shouldSetFloatToZeroIfFieldIsEmpty() throws XmlParserException {
         testIfParsable(FloatTestObj.class, 0.0F, "");
     }
 
     @Test
-    public void shouldParseString() {
+    public void shouldParseString() throws XmlParserException {
         testIfParsable(StringTestObj.class, "test");
     }
 
     @Test
-    public void shouldParseBoolean() {
+    public void shouldParseBoolean() throws XmlParserException {
         BooleanTestObj response = new BooleanTestObj();
         XmlParser<BooleanTestObj> parser = xmlParserFactory.createXmlParser(BooleanTestObj.class);
         response = parser.parse("<test>true</test>");
@@ -75,7 +75,7 @@ public class XmlParserFactoryTest {
     }
 
     @Test
-    public void shouldParseEnum() {
+    public void shouldParseEnum() throws XmlParserException {
         testIfParsable(EnumTestObj.class, EnumImpl.VALID);
     }
 
@@ -84,13 +84,13 @@ public class XmlParserFactoryTest {
         XmlParser parser = xmlParserFactory.createXmlParser(UndefinedListTestObj.class);
     }
 
-    @Test(expected = XmlParserRuntimeException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenErrorsInXPath() {
         XmlParser parser = xmlParserFactory.createXmlParser(ErrornousXPathTestObj.class);
     }
 
     @Test
-    public void shouldParseListOfStrings() {
+    public void shouldParseListOfStrings() throws XmlParserException {
         XmlParser<ListOfStringsTestObj> parser = xmlParserFactory.createXmlParser(ListOfStringsTestObj.class);
         String xml = "<test><array>A</array><array>B</array></test>";
         ListOfStringsTestObj response = parser.parse(xml);
@@ -99,7 +99,7 @@ public class XmlParserFactoryTest {
     }
 
     @Test
-    public void shouldParseListOfXmlAnnotatedClass() {
+    public void shouldParseListOfXmlAnnotatedClass() throws XmlParserException {
         XmlParser<ListOfAnnotatedClassTestObj> parser = xmlParserFactory.createXmlParser(ListOfAnnotatedClassTestObj.class);
         String xml = "<test><array><string>A</string><int>1</int></array><array><string>B</string><int>2</int></array></test>";
         ListOfAnnotatedClassTestObj response = parser.parse(xml);
@@ -110,11 +110,11 @@ public class XmlParserFactoryTest {
         assertEquals(2, response.getTest().get(1).getTestInt());
     }
 
-    private void testIfParsable(Class clazz, Object expected) {
+    private void testIfParsable(Class clazz, Object expected) throws XmlParserException {
         testIfParsable(clazz, expected, expected.toString());
     }
 
-    private void testIfParsable(Class clazz, Object expected, String xmlString) {
+    private void testIfParsable(Class clazz, Object expected, String xmlString) throws XmlParserException {
         XmlParser<TestableObject> parser = xmlParserFactory.createXmlParser(clazz);
         TestableObject response = parser.parse("<test>" + xmlString + "</test>");
         assertEquals(expected, response.getTest());

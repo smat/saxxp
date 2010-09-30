@@ -2,7 +2,7 @@ package com.github.saxxp;
 
 import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.saxxp.exception.XmlParserRuntimeException;
+import com.github.saxxp.exception.XmlParserException;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -78,7 +78,7 @@ public class XmlParserFactory {
                         }
                     }
                 } catch (JDOMException e) {
-                    throw new XmlParserRuntimeException("Could not create XmlParser", e);
+                    throw new IllegalArgumentException("Error createing XPath, invalid expression", e);
                 }
             }
         }
@@ -90,7 +90,7 @@ public class XmlParserFactory {
         protected final Field field;
         protected final XPath xPath;
 
-        public abstract void parseElement(Object obj, Object context) throws JDOMException, IllegalAccessException;
+        public abstract void parseElement(Object obj, Object context) throws JDOMException, IllegalAccessException, XmlParserException;
 
         public FieldParser(Field field, XPath xPath) {
             this.field = field;
@@ -194,7 +194,7 @@ public class XmlParserFactory {
             }
         }
         @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, XmlParserException {
             List objList = (List) field.get(obj);
             List<Element> list = xPath.selectNodes(doc);
             for (Element element : list) {
@@ -228,7 +228,7 @@ public class XmlParserFactory {
             }
         }
 
-        private T _parse(Object context) {
+        private T _parse(Object context) throws XmlParserException {
             T returnObject = null;
             try {
                 returnObject = clazz.newInstance();
@@ -236,33 +236,32 @@ public class XmlParserFactory {
                     action.parseElement(returnObject, context);
                 }
             } catch (JDOMException e) {
-                e.printStackTrace();
+                throw new XmlParserException("Could not parse XML using XPath", e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new XmlParserException("Could not access field in object", e);
             } catch (InstantiationException e) {
-                e.printStackTrace();
+                throw new XmlParserException("Could not create new instance of object", e);
             }
             return returnObject;
         }
 
-        public T parse(String xml) {
+        public T parse(String xml) throws XmlParserException {
             return parse(toInputStream(xml));
         }
 
-        public T parse(Element element) {
+        public T parse(Element element) throws XmlParserException {
             return _parse(element);
         }
 
-        public T parse(InputStream stream) {
+        public T parse(InputStream stream) throws XmlParserException {
             try {
                 Document doc = new SAXBuilder().build(stream);
                 return _parse(doc);
             } catch (JDOMException e) {
-                e.printStackTrace();
+                throw new XmlParserException("Could not parse input XML", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new XmlParserException("Could not read XML stream", e);
             }
-            return null;
         }
     }
 
