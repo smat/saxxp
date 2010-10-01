@@ -6,10 +6,39 @@
     <packaging>jar</packaging>
     <version>0.1-SNAPSHOT</version>
     <name>Simple Annotation XPath XML Parser</name>
+    <description>
+        Simple Annotation XPath XML Parser is used to parse XML to POJO using java annotations
+    </description>
+    <url>http://github.com/smat/saxxp</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <licenses>
+        <license>
+            <name>The MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <id>smat</id>
+            <name>Stian Mathiassen</name>
+            <email>stian.mathiassen@bekk.no</email>
+            <roles>
+                <role>Lead developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:smat/saxxp.git</connection>
+        <developerConnection>scm:git:git@github.com:smat/saxxp.git</developerConnection>
+        <url>http://github.com/smat/saxxp</url>
+    </scm>
 
     <dependencies>
         <!--
