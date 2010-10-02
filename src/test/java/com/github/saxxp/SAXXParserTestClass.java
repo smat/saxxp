@@ -2,7 +2,7 @@ package com.github.saxxp;
 
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
 
-public class XmlParserTestClass {
+public class SAXXParserTestClass {
     @ParseFromXmlWithXPath("string")
     private String test;
     @ParseFromXmlWithXPath("int")

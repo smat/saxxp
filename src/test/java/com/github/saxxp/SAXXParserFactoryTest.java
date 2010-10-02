@@ -2,7 +2,7 @@ package com.github.saxxp;
 
 import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.saxxp.exception.XmlParserException;
+import com.github.saxxp.exception.SAXXParserException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,49 +12,49 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class XmlParserFactoryTest {
-    private XmlParserFactory xmlParserFactory;
+public class SAXXParserFactoryTest {
+    private SAXXParserFactory SAXXParserFactory;
 
     @Before
     public void setup() {
-        xmlParserFactory = new XmlParserFactory();
+        SAXXParserFactory = new SAXXParserFactory();
 
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectNullClassReference() {
-        xmlParserFactory.createXmlParser(null);
+        SAXXParserFactory.createXmlParser(null);
     }
 
     @Test
-    public void shouldParseInteger() throws XmlParserException {
+    public void shouldParseInteger() throws SAXXParserException {
         testIfParsable(IntegerTestObj.class, 1);
     }
 
     @Test
-    public void shouldSetIntegerToZeroIfFieldIsEmpty() throws XmlParserException {
+    public void shouldSetIntegerToZeroIfFieldIsEmpty() throws SAXXParserException {
         testIfParsable(IntegerTestObj.class, 0, "");
     }
 
     @Test
-    public void shouldParseFloat() throws XmlParserException {
+    public void shouldParseFloat() throws SAXXParserException {
         testIfParsable(FloatTestObj.class, 1.0F);
     }
 
     @Test
-    public void shouldSetFloatToZeroIfFieldIsEmpty() throws XmlParserException {
+    public void shouldSetFloatToZeroIfFieldIsEmpty() throws SAXXParserException {
         testIfParsable(FloatTestObj.class, 0.0F, "");
     }
 
     @Test
-    public void shouldParseString() throws XmlParserException {
+    public void shouldParseString() throws SAXXParserException {
         testIfParsable(StringTestObj.class, "test");
     }
 
     @Test
-    public void shouldParseBoolean() throws XmlParserException {
+    public void shouldParseBoolean() throws SAXXParserException {
         BooleanTestObj response = new BooleanTestObj();
-        XmlParser<BooleanTestObj> parser = xmlParserFactory.createXmlParser(BooleanTestObj.class);
+        SAXXParser<BooleanTestObj> parser = SAXXParserFactory.createXmlParser(BooleanTestObj.class);
         response = parser.parse("<test>true</test>");
         assertEquals(true, response.getTest());
         response = parser.parse("<test>false</test>");
@@ -71,27 +71,27 @@ public class XmlParserFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowRuntimeExceptionWhenEnumDoesNotHaveIdentifierAnnotation() {
-        xmlParserFactory.createXmlParser(ExceptionEnumTestObj.class);
+        SAXXParserFactory.createXmlParser(ExceptionEnumTestObj.class);
     }
 
     @Test
-    public void shouldParseEnum() throws XmlParserException {
+    public void shouldParseEnum() throws SAXXParserException {
         testIfParsable(EnumTestObj.class, EnumImpl.VALID);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenGenericInListIsUndefined() {
-        XmlParser parser = xmlParserFactory.createXmlParser(UndefinedListTestObj.class);
+        SAXXParser parser = SAXXParserFactory.createXmlParser(UndefinedListTestObj.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenErrorsInXPath() {
-        XmlParser parser = xmlParserFactory.createXmlParser(ErrornousXPathTestObj.class);
+        SAXXParser parser = SAXXParserFactory.createXmlParser(ErrornousXPathTestObj.class);
     }
 
     @Test
-    public void shouldParseListOfStrings() throws XmlParserException {
-        XmlParser<ListOfStringsTestObj> parser = xmlParserFactory.createXmlParser(ListOfStringsTestObj.class);
+    public void shouldParseListOfStrings() throws SAXXParserException {
+        SAXXParser<ListOfStringsTestObj> parser = SAXXParserFactory.createXmlParser(ListOfStringsTestObj.class);
         String xml = "<test><array>A</array><array>B</array></test>";
         ListOfStringsTestObj response = parser.parse(xml);
         assertEquals("A", response.getTest().get(0));
@@ -99,23 +99,23 @@ public class XmlParserFactoryTest {
     }
 
     @Test
-    public void shouldParseListOfXmlAnnotatedClass() throws XmlParserException {
-        XmlParser<ListOfAnnotatedClassTestObj> parser = xmlParserFactory.createXmlParser(ListOfAnnotatedClassTestObj.class);
+    public void shouldParseListOfXmlAnnotatedClass() throws SAXXParserException {
+        SAXXParser<ListOfAnnotatedClassTestObj> parser = SAXXParserFactory.createXmlParser(ListOfAnnotatedClassTestObj.class);
         String xml = "<test><array><string>A</string><int>1</int></array><array><string>B</string><int>2</int></array></test>";
         ListOfAnnotatedClassTestObj response = parser.parse(xml);
-        Assert.assertEquals(XmlParserTestClass.class, response.getTest().get(0).getClass());
+        Assert.assertEquals(SAXXParserTestClass.class, response.getTest().get(0).getClass());
         assertEquals("A", response.getTest().get(0).getTest());
         assertEquals(1, response.getTest().get(0).getTestInt());
         assertEquals("B", response.getTest().get(1).getTest());
         assertEquals(2, response.getTest().get(1).getTestInt());
     }
 
-    private void testIfParsable(Class clazz, Object expected) throws XmlParserException {
+    private void testIfParsable(Class clazz, Object expected) throws SAXXParserException {
         testIfParsable(clazz, expected, expected.toString());
     }
 
-    private void testIfParsable(Class clazz, Object expected, String xmlString) throws XmlParserException {
-        XmlParser<TestableObject> parser = xmlParserFactory.createXmlParser(clazz);
+    private void testIfParsable(Class clazz, Object expected, String xmlString) throws SAXXParserException {
+        SAXXParser<TestableObject> parser = SAXXParserFactory.createXmlParser(clazz);
         TestableObject response = parser.parse("<test>" + xmlString + "</test>");
         assertEquals(expected, response.getTest());
     }
@@ -199,10 +199,10 @@ public class XmlParserFactoryTest {
         }
     }
 
-    public static class ListOfAnnotatedClassTestObj implements TestableObject<List<XmlParserTestClass>> {
+    public static class ListOfAnnotatedClassTestObj implements TestableObject<List<SAXXParserTestClass>> {
         @ParseFromXmlWithXPath("/test/array")
-        private List<XmlParserTestClass> list = new ArrayList<XmlParserTestClass>();
-        public List<XmlParserTestClass> getTest() {
+        private List<SAXXParserTestClass> list = new ArrayList<SAXXParserTestClass>();
+        public List<SAXXParserTestClass> getTest() {
             return list;
         }
     }

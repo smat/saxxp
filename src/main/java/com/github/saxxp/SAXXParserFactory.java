@@ -2,7 +2,7 @@ package com.github.saxxp;
 
 import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.saxxp.exception.XmlParserException;
+import com.github.saxxp.exception.SAXXParserException;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -18,12 +18,12 @@ import java.util.List;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
 
-public class XmlParserFactory {
-    public <T extends Object> XmlParser<T> createXmlParser(Class<T> clazz) {
-        return XmlParserFactory._createXmlParser(clazz);
+public class SAXXParserFactory {
+    public <T extends Object> SAXXParser<T> createXmlParser(Class<T> clazz) {
+        return SAXXParserFactory._createXmlParser(clazz);
     }
 
-    private static <T extends Object> XmlParser<T> _createXmlParser(Class<T> clazz) {
+    private static <T extends Object> SAXXParser<T> _createXmlParser(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Could not create parser for null class");
         }
@@ -83,14 +83,14 @@ public class XmlParserFactory {
             }
         }
 
-        return new XmlParserImpl<T>(clazz, parseableElements);
+        return new SAXXParserImpl<T>(clazz, parseableElements);
     }
 
     private abstract static class FieldParser {
         protected final Field field;
         protected final XPath xPath;
 
-        public abstract void parseElement(Object obj, Object context) throws JDOMException, IllegalAccessException, XmlParserException;
+        public abstract void parseElement(Object obj, Object context) throws JDOMException, IllegalAccessException, SAXXParserException;
 
         public FieldParser(Field field, XPath xPath) {
             this.field = field;
@@ -181,25 +181,25 @@ public class XmlParserFactory {
     }
     private static class ListFieldParser extends FieldParser{
         private final Class elementClazz;
-        private XmlParser xmlParser;
+        private SAXXParser SAXXParser;
 
         public ListFieldParser(Field field, XPath xPath, Class elementClazz) {
             super(field, xPath);
             this.elementClazz = elementClazz;
             if (elementClazz == String.class) {
-                xmlParser = null;
+                SAXXParser = null;
             }
             else {
-                xmlParser = XmlParserFactory._createXmlParser(elementClazz);
+                SAXXParser = SAXXParserFactory._createXmlParser(elementClazz);
             }
         }
         @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, XmlParserException {
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SAXXParserException {
             List objList = (List) field.get(obj);
             List<Element> list = xPath.selectNodes(doc);
             for (Element element : list) {
-                if (xmlParser != null) {
-                    Object returnObj = xmlParser.parse(element);
+                if (SAXXParser != null) {
+                    Object returnObj = SAXXParser.parse(element);
                     objList.add(returnObj);
                 }
                 else if (elementClazz == String.class) {
@@ -209,12 +209,12 @@ public class XmlParserFactory {
         }
     }
 
-    private static class XmlParserImpl<T extends Object> implements XmlParser<T> {
+    private static class SAXXParserImpl<T extends Object> implements SAXXParser<T> {
         private final Class<T> clazz;
         private final List<FieldParser> parseableElements;
         private Constructor constructor;
 
-        public XmlParserImpl(Class<T> clazz, List<FieldParser> parseableElements) {
+        public SAXXParserImpl(Class<T> clazz, List<FieldParser> parseableElements) {
             this.clazz = clazz;
             this.parseableElements = parseableElements;
             Constructor<?>[] constructors = clazz.getConstructors();
@@ -228,7 +228,7 @@ public class XmlParserFactory {
             }
         }
 
-        private T _parse(Object context) throws XmlParserException {
+        private T _parse(Object context) throws SAXXParserException {
             T returnObject = null;
             try {
                 returnObject = clazz.newInstance();
@@ -236,31 +236,31 @@ public class XmlParserFactory {
                     action.parseElement(returnObject, context);
                 }
             } catch (JDOMException e) {
-                throw new XmlParserException("Could not parse XML using XPath", e);
+                throw new SAXXParserException("Could not parse XML using XPath", e);
             } catch (IllegalAccessException e) {
-                throw new XmlParserException("Could not access field in object", e);
+                throw new SAXXParserException("Could not access field in object", e);
             } catch (InstantiationException e) {
-                throw new XmlParserException("Could not create new instance of object", e);
+                throw new SAXXParserException("Could not create new instance of object", e);
             }
             return returnObject;
         }
 
-        public T parse(String xml) throws XmlParserException {
+        public T parse(String xml) throws SAXXParserException {
             return parse(toInputStream(xml));
         }
 
-        public T parse(Element element) throws XmlParserException {
+        public T parse(Element element) throws SAXXParserException {
             return _parse(element);
         }
 
-        public T parse(InputStream stream) throws XmlParserException {
+        public T parse(InputStream stream) throws SAXXParserException {
             try {
                 Document doc = new SAXBuilder().build(stream);
                 return _parse(doc);
             } catch (JDOMException e) {
-                throw new XmlParserException("Could not parse input XML", e);
+                throw new SAXXParserException("Could not parse input XML", e);
             } catch (IOException e) {
-                throw new XmlParserException("Could not read XML stream", e);
+                throw new SAXXParserException("Could not read XML stream", e);
             }
         }
     }
