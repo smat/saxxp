@@ -3,7 +3,6 @@ package com.github.saxxp;
 import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
 import com.github.saxxp.annotation.ParseFromXmlWithXPath;
 import com.github.saxxp.exception.SAXXParserException;
-import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -19,11 +18,13 @@ import java.util.List;
 import static org.apache.commons.io.IOUtils.toInputStream;
 
 public class SAXXParserFactory {
-    public <T extends Object> SAXXParser<T> createXmlParser(Class<T> clazz) {
-        return SAXXParserFactory._createXmlParser(clazz);
+    private PrimitiveFieldParserFactory primitiveFieldParserFactory;
+
+    public SAXXParserFactory() {
+        primitiveFieldParserFactory = new PrimitiveFieldParserFactory();
     }
 
-    private static <T extends Object> SAXXParser<T> _createXmlParser(Class<T> clazz) {
+    public <T extends Object> SAXXParser<T> createXmlParser(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Could not create parser for null class");
         }
@@ -37,34 +38,11 @@ public class SAXXParserFactory {
                     final XPath xPath = XPath.newInstance(annotation.value());
                     field.setAccessible(true);
 
-                    if (field.getType() == int.class) {
-                        parseableElements.add(new IntFieldParser(field, xPath));
+                    FieldParser fieldParser = primitiveFieldParserFactory.createFieldParser(field, xPath);
+                    if (fieldParser != null) {
+                        parseableElements.add(fieldParser);
                     }
-                    else if (field.getType() == float.class) {
-                        parseableElements.add(new FloatFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == double.class) {
-                        parseableElements.add(new DoubleFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == byte.class) {
-                        parseableElements.add(new ByteFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == short.class) {
-                        parseableElements.add(new ShortFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == long.class) {
-                        parseableElements.add(new LongFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == char.class) {
-                        parseableElements.add(new CharFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == String.class) {
-                        parseableElements.add(new StringFieldParser(field, xPath));
-                    }
-                    else if (field.getType() == boolean.class) {
-                        parseableElements.add(new BooleanFieldParser(field, xPath));
-                    }
-                    else if (field.getType().isEnum()) {
+                    if (field.getType().isEnum()) {
                         Field identifierField = null;
                         for (Field enumField : field.getType().getDeclaredFields()) {
                             enumField.setAccessible(true);
@@ -101,165 +79,6 @@ public class SAXXParserFactory {
         return new SAXXParserImpl<T>(clazz, parseableElements);
     }
 
-    private abstract static class FieldParser {
-        protected final Field field;
-        protected final XPath xPath;
-
-        public abstract void parseElement(Object obj, Object context) throws JDOMException, IllegalAccessException, SAXXParserException;
-
-        public FieldParser(Field field, XPath xPath) {
-            this.field = field;
-            this.xPath = xPath;
-        }
-    }
-
-    private static class IntFieldParser extends FieldParser {
-        public IntFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, 0);
-                }
-                else {
-                    field.set(obj, Integer.parseInt(element.getText()));
-                }
-            }
-        }
-    }
-    private static class FloatFieldParser extends FieldParser {
-        public FloatFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, 0.0F);
-                }
-                else {
-                    field.set(obj, Float.parseFloat(element.getText()));
-                }
-            }
-        }
-    }
-    private static class DoubleFieldParser extends FieldParser {
-        public DoubleFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, 0.0);
-                }
-                else {
-                    field.set(obj, Double.parseDouble(element.getText()));
-                }
-            }
-        }
-    }
-    private static class ByteFieldParser extends FieldParser {
-        public ByteFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, (byte) 0);
-                }
-                else {
-                    field.set(obj, Byte.parseByte(element.getText()));
-                }
-            }
-        }
-    }
-    private static class ShortFieldParser extends FieldParser {
-        public ShortFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, (short) 0);
-                }
-                else {
-                    field.set(obj, Short.parseShort(element.getText()));
-                }
-            }
-        }
-    }
-    private static class LongFieldParser extends FieldParser {
-        public LongFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, 0L);
-                }
-                else {
-                    field.set(obj, Long.parseLong(element.getText()));
-                }
-            }
-        }
-    }
-    private static class CharFieldParser extends FieldParser {
-        public CharFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (StringUtils.isBlank(element.getTextTrim())) {
-                    field.set(obj, (char) 0);
-                }
-                else {
-                    field.set(obj, element.getTextTrim().charAt(0));
-                }
-            }
-        }
-    }
-    private static class BooleanFieldParser extends FieldParser {
-        public BooleanFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null) {
-                if (element.getText().compareToIgnoreCase("true") == 0 || element.getText().compareToIgnoreCase("1") == 0) {
-                    field.set(obj, true);
-                }
-                else {
-                    field.set(obj, false);
-                }
-            }
-        }
-    }
-    private static class StringFieldParser extends FieldParser {
-        public StringFieldParser(Field field, XPath xPath) {
-            super(field, xPath);
-        }
-        @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
-            Element element = (Element) xPath.selectSingleNode(doc);
-            if (element != null)
-                field.set(obj, element.getText());
-        }
-    }
     private static class EnumFieldParser extends FieldParser {
         private final Field enumIdentifier;
         public EnumFieldParser(Field field, XPath xPath, Field enumIdentifier) {
@@ -279,7 +98,7 @@ public class SAXXParserFactory {
             }
         }
     }
-    private static class ListFieldParser extends FieldParser{
+    private class ListFieldParser extends FieldParser{
         private final Class elementClazz;
         private SAXXParser SAXXParser;
 
@@ -290,7 +109,7 @@ public class SAXXParserFactory {
                 SAXXParser = null;
             }
             else {
-                SAXXParser = SAXXParserFactory._createXmlParser(elementClazz);
+                SAXXParser = SAXXParserFactory.this.createXmlParser(elementClazz);
             }
         }
         @Override
