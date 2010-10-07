@@ -42,7 +42,7 @@ public class SAXXParserFactory {
                     if (fieldParser != null) {
                         parseableElements.add(fieldParser);
                     }
-                    if (field.getType().isEnum()) {
+                    else if (field.getType().isEnum()) {
                         Field identifierField = null;
                         for (Field enumField : field.getType().getDeclaredFields()) {
                             enumField.setAccessible(true);
