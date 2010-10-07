@@ -125,6 +125,10 @@ public class SAXXParserFactory {
         public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SAXXParserException {
             ObjectWrapper wrapper = new ObjectWrapper();
             List objList = (List) field.get(obj);
+            if (objList == null) {
+                objList = new ArrayList();
+                field.set(obj, objList);
+            }
             List<Element> list = xPath.selectNodes(doc);
             for (Element element : list) {
                 if (fieldParser != null) {

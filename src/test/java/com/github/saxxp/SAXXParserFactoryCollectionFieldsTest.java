@@ -54,6 +54,15 @@ public class SAXXParserFactoryCollectionFieldsTest {
         assertEquals(2, response.getTest().get(1).getTestInt());
     }
 
+    @Test
+    public void shouldCreateNewArrayListIfListIsNullObject() {
+        SAXXParser<NullListTestObject> parser = factory.createXmlParser(NullListTestObject.class);
+        String xml = "<test><array>1</array><array>2</array></test>";
+        NullListTestObject response = parser.parse(xml);
+        assertEquals(1d, response.getTest().get(0), 0.1);
+        assertEquals(2d, response.getTest().get(1), 0.1);
+    }
+
     public static class ListOfStringsTestObj implements TestableObject<List> {
         @ParseFromXmlWithXPath("/test/array")
         private ArrayList<String> test = new ArrayList<String>();
@@ -84,6 +93,14 @@ public class SAXXParserFactoryCollectionFieldsTest {
         private List<SeveralAnnotatedFieldsTestObject> list = new ArrayList<SeveralAnnotatedFieldsTestObject>();
         public List<SeveralAnnotatedFieldsTestObject> getTest() {
             return list;
+        }
+    }
+
+    public static class NullListTestObject implements TestableObject<List<Double>> {
+        @ParseFromXmlWithXPath("/test/array")
+        private List<Double> test;
+        public List<Double> getTest() {
+            return test;
         }
     }
 
