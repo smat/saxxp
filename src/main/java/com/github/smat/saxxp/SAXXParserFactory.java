@@ -1,8 +1,8 @@
-package com.github.saxxp;
+package com.github.smat.saxxp;
 
-import com.github.saxxp.annotation.ParseFromXmlEnumIdentifier;
-import com.github.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.saxxp.exception.SAXXParserException;
+import com.github.smat.saxxp.annotation.ParseFromXmlEnumIdentifier;
+import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
+import com.github.smat.saxxp.exception.SAXXParserException;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;

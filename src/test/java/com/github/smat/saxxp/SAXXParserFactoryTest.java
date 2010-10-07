@@ -1,6 +1,6 @@
-package com.github.saxxp;
+package com.github.smat.saxxp;
 
-import com.github.saxxp.annotation.ParseFromXmlWithXPath;
+import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
 import org.junit.Before;
 import org.junit.Test;
 
