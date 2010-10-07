@@ -149,6 +149,15 @@ public class SAXXParserFactoryTest {
     }
 
     @Test
+    public void shouldParseListOfInts() throws SAXXParserException {
+        SAXXParser<ListOfIntsTestObj> parser = SAXXParserFactory.createXmlParser(ListOfIntsTestObj.class);
+        String xml = "<test><array>1</array><array>2</array></test>";
+        ListOfIntsTestObj response = parser.parse(xml);
+        assertEquals(1, (int) response.getTest().get(0));
+        assertEquals(2, (int) response.getTest().get(1));
+    }
+
+    @Test
     public void shouldParseListOfXmlAnnotatedClass() throws SAXXParserException {
         SAXXParser<ListOfAnnotatedClassTestObj> parser = SAXXParserFactory.createXmlParser(ListOfAnnotatedClassTestObj.class);
         String xml = "<test><array><string>A</string><int>1</int></array><array><string>B</string><int>2</int></array></test>";
@@ -258,6 +267,14 @@ public class SAXXParserFactoryTest {
         private ArrayList<String> test = new ArrayList<String>();
 
         public ArrayList<String> getTest() {
+            return test;
+        }
+    }
+    public static class ListOfIntsTestObj implements TestableObject<List> {
+        @ParseFromXmlWithXPath("/test/array")
+        private ArrayList<Integer> test = new ArrayList<Integer>();
+
+        public ArrayList<Integer> getTest() {
             return test;
         }
     }

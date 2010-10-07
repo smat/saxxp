@@ -32,7 +32,11 @@ class PrimitiveFieldParserFactory {
     }
 
     public FieldParser createFieldParser(Field field, XPath xPath) {
-        Class<FieldParser> fieldParserClass = parserMap.get(field.getType());
+        return createFieldParser(field, xPath, field.getType());
+    }
+
+    public FieldParser createFieldParser(Field field, XPath xPath, Class clazz) {
+        Class<FieldParser> fieldParserClass = parserMap.get(clazz);
         if (fieldParserClass == null) {
             return null;
         }

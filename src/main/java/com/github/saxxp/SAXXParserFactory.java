@@ -101,28 +101,39 @@ public class SAXXParserFactory {
     private class ListFieldParser extends FieldParser{
         private final Class elementClazz;
         private SAXXParser SAXXParser;
+        private FieldParser fieldParser;
+
+        private class ObjectWrapper {
+            public Object object;
+        }
 
         public ListFieldParser(Field field, XPath xPath, Class elementClazz) {
             super(field, xPath);
             this.elementClazz = elementClazz;
-            if (elementClazz == String.class) {
-                SAXXParser = null;
+            try {
+                fieldParser = primitiveFieldParserFactory.createFieldParser(ObjectWrapper.class.getField("object"), XPath.newInstance("."), elementClazz);
+            } catch (NoSuchFieldException e) {
+                throw new SAXXParserException("Could not create List parser", e);
+            } catch (JDOMException e) {
+                throw new SAXXParserException("Could not create new XPath for List parser", e);
             }
-            else {
+            if (fieldParser == null) {
                 SAXXParser = SAXXParserFactory.this.createXmlParser(elementClazz);
             }
         }
         @Override
         public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SAXXParserException {
+            ObjectWrapper wrapper = new ObjectWrapper();
             List objList = (List) field.get(obj);
             List<Element> list = xPath.selectNodes(doc);
             for (Element element : list) {
-                if (SAXXParser != null) {
+                if (fieldParser != null) {
+                    fieldParser.parseElement(wrapper, element);
+                    objList.add(wrapper.object);
+                }
+                else if (SAXXParser != null) {
                     Object returnObj = SAXXParser.parse(element);
                     objList.add(returnObj);
-                }
-                else if (elementClazz == String.class) {
-                    objList.add(element.getText());
                 }
             }
         }
