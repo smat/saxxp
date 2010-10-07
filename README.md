@@ -9,6 +9,4 @@ Example
             public int getVariable() { return variabel; }
         }
         SAXXParser<DomainClass> parser = (new SAXXParserFactory()).createXmlParser(DomainClass.class);
-        try {
-            DomainClass domainClass = parser.parse("<tagname>2</tagname>");
-        } catch (SAXXParserException e) { e.printStackTrace(); }
+        DomainClass domainClass = parser.parse("<tagname>2</tagname>");

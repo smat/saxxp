@@ -228,7 +228,7 @@ public class SAXXParserFactory {
             }
         }
 
-        private T _parse(Object context) throws SAXXParserException {
+        private T _parse(Object context) {
             T returnObject = null;
             try {
                 returnObject = clazz.newInstance();
@@ -245,15 +245,15 @@ public class SAXXParserFactory {
             return returnObject;
         }
 
-        public T parse(String xml) throws SAXXParserException {
+        public T parse(String xml) {
             return parse(toInputStream(xml));
         }
 
-        public T parse(Element element) throws SAXXParserException {
+        public T parse(Element element) {
             return _parse(element);
         }
 
-        public T parse(InputStream stream) throws SAXXParserException {
+        public T parse(InputStream stream) {
             try {
                 Document doc = new SAXBuilder().build(stream);
                 return _parse(doc);
