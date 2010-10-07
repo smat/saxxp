@@ -47,6 +47,56 @@ public class SAXXParserFactoryTest {
     }
 
     @Test
+    public void shouldParseDouble() throws SAXXParserException {
+        testIfParsable(DoubleTestObj.class, 1.0);
+    }
+
+    @Test
+    public void shouldSetDoubleToZeroIfFieldIsEmpty() throws SAXXParserException {
+        testIfParsable(DoubleTestObj.class, 0.0, "");
+    }
+
+    @Test
+    public void shouldParseByte() {
+        testIfParsable(ByteTestObj.class, (byte) 1);
+    }
+
+    @Test
+    public void shouldSetByteToZeroIfFieldIsEmpty() {
+        testIfParsable(ByteTestObj.class, (byte) 0, "");
+    }
+
+    @Test
+    public void shouldParseShort() {
+        testIfParsable(ShortTestObj.class, (short) 1);
+    }
+
+    @Test
+    public void shouldSetShortToZeroIfFieldIsEmpty() {
+        testIfParsable(ShortTestObj.class, (short) 0, "");
+    }
+
+    @Test
+    public void shouldParseLong() {
+        testIfParsable(LongTestObj.class, 1L);
+    }
+
+    @Test
+    public void shouldSetLongToZeroIfFieldIsEmpty() {
+        testIfParsable(LongTestObj.class, 0L, "");
+    }
+
+    @Test
+    public void shouldCharLong() {
+        testIfParsable(CharTestObj.class, 'a');
+    }
+
+    @Test
+    public void shouldSetCharToZeroIfFieldIsEmpty() {
+        testIfParsable(CharTestObj.class, (char) 0, "");
+    }
+
+    @Test
     public void shouldParseString() throws SAXXParserException {
         testIfParsable(StringTestObj.class, "test");
     }
@@ -139,6 +189,51 @@ public class SAXXParserFactoryTest {
 
         public Float getTest() {
             return testFloat;
+        }
+    }
+
+    public static class DoubleTestObj implements TestableObject<Double> {
+        @ParseFromXmlWithXPath("/test")
+        private double testFloat;
+
+        public Double getTest() {
+            return testFloat;
+        }
+    }
+
+    public static class ByteTestObj implements TestableObject<Byte> {
+        @ParseFromXmlWithXPath("/test")
+        private byte testByte;
+
+        public Byte getTest() {
+            return testByte;
+        }
+    }
+
+    public static class ShortTestObj implements TestableObject<Short> {
+        @ParseFromXmlWithXPath("/test")
+        private short testShort;
+
+        public Short getTest() {
+            return testShort;
+        }
+    }
+
+    public static class LongTestObj implements TestableObject<Long> {
+        @ParseFromXmlWithXPath("/test")
+        private long testShort;
+
+        public Long getTest() {
+            return testShort;
+        }
+    }
+
+    public static class CharTestObj implements TestableObject<Character> {
+        @ParseFromXmlWithXPath("/test")
+        private char testShort;
+
+        public Character getTest() {
+            return testShort;
         }
     }
 

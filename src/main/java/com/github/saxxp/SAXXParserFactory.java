@@ -43,6 +43,21 @@ public class SAXXParserFactory {
                     else if (field.getType() == float.class) {
                         parseableElements.add(new FloatFieldParser(field, xPath));
                     }
+                    else if (field.getType() == double.class) {
+                        parseableElements.add(new DoubleFieldParser(field, xPath));
+                    }
+                    else if (field.getType() == byte.class) {
+                        parseableElements.add(new ByteFieldParser(field, xPath));
+                    }
+                    else if (field.getType() == short.class) {
+                        parseableElements.add(new ShortFieldParser(field, xPath));
+                    }
+                    else if (field.getType() == long.class) {
+                        parseableElements.add(new LongFieldParser(field, xPath));
+                    }
+                    else if (field.getType() == char.class) {
+                        parseableElements.add(new CharFieldParser(field, xPath));
+                    }
                     else if (field.getType() == String.class) {
                         parseableElements.add(new StringFieldParser(field, xPath));
                     }
@@ -128,6 +143,91 @@ public class SAXXParserFactory {
                 }
                 else {
                     field.set(obj, Float.parseFloat(element.getText()));
+                }
+            }
+        }
+    }
+    private static class DoubleFieldParser extends FieldParser {
+        public DoubleFieldParser(Field field, XPath xPath) {
+            super(field, xPath);
+        }
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+            Element element = (Element) xPath.selectSingleNode(doc);
+            if (element != null) {
+                if (StringUtils.isBlank(element.getTextTrim())) {
+                    field.set(obj, 0.0);
+                }
+                else {
+                    field.set(obj, Double.parseDouble(element.getText()));
+                }
+            }
+        }
+    }
+    private static class ByteFieldParser extends FieldParser {
+        public ByteFieldParser(Field field, XPath xPath) {
+            super(field, xPath);
+        }
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+            Element element = (Element) xPath.selectSingleNode(doc);
+            if (element != null) {
+                if (StringUtils.isBlank(element.getTextTrim())) {
+                    field.set(obj, (byte) 0);
+                }
+                else {
+                    field.set(obj, Byte.parseByte(element.getText()));
+                }
+            }
+        }
+    }
+    private static class ShortFieldParser extends FieldParser {
+        public ShortFieldParser(Field field, XPath xPath) {
+            super(field, xPath);
+        }
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+            Element element = (Element) xPath.selectSingleNode(doc);
+            if (element != null) {
+                if (StringUtils.isBlank(element.getTextTrim())) {
+                    field.set(obj, (short) 0);
+                }
+                else {
+                    field.set(obj, Short.parseShort(element.getText()));
+                }
+            }
+        }
+    }
+    private static class LongFieldParser extends FieldParser {
+        public LongFieldParser(Field field, XPath xPath) {
+            super(field, xPath);
+        }
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+            Element element = (Element) xPath.selectSingleNode(doc);
+            if (element != null) {
+                if (StringUtils.isBlank(element.getTextTrim())) {
+                    field.set(obj, 0L);
+                }
+                else {
+                    field.set(obj, Long.parseLong(element.getText()));
+                }
+            }
+        }
+    }
+    private static class CharFieldParser extends FieldParser {
+        public CharFieldParser(Field field, XPath xPath) {
+            super(field, xPath);
+        }
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException {
+            Element element = (Element) xPath.selectSingleNode(doc);
+            if (element != null) {
+                if (StringUtils.isBlank(element.getTextTrim())) {
+                    field.set(obj, (char) 0);
+                }
+                else {
+                    field.set(obj, element.getTextTrim().charAt(0));
                 }
             }
         }
