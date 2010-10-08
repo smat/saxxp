@@ -117,7 +117,7 @@ public class SAXXParserFactory {
 
     private class ListFieldParser extends FieldParser {
         private final Class elementClazz;
-        private SAXXParser SAXXParser;
+        private SAXXParser parser;
         private FieldParser fieldParser;
 
         private class ObjectWrapper {
@@ -135,7 +135,7 @@ public class SAXXParserFactory {
                 throw new SAXXParserException("Could not create new XPath for List parser", e);
             }
             if (fieldParser == null) {
-                SAXXParser = SAXXParserFactory.this.createXmlParser(elementClazz);
+                parser = SAXXParserFactory.this.createXmlParser(elementClazz);
             }
         }
 
@@ -152,8 +152,8 @@ public class SAXXParserFactory {
                 if (fieldParser != null) {
                     fieldParser.parseElement(wrapper, element);
                     objList.add(wrapper.object);
-                } else if (SAXXParser != null) {
-                    Object returnObj = SAXXParser.parse(element);
+                } else if (parser != null) {
+                    Object returnObj = parser.parse(element);
                     objList.add(returnObj);
                 }
             }
