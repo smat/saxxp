@@ -21,7 +21,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenGenericInListIsUndefined() {
-        SAXXParser parser = factory.createXmlParser(UndefinedListTestObj.class);
+        factory.createXmlParser(UndefinedListTestObj.class);
     }
 
     @Test

@@ -108,12 +108,12 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
         assertEquals(false, response.getTest());
     }
 
-    private void testIfParsable(Class clazz, Object expected) throws SAXXParserException {
+    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected) throws SAXXParserException {
         testIfParsable(clazz, expected, expected.toString());
     }
 
-    private void testIfParsable(Class clazz, Object expected, String xmlString) throws SAXXParserException {
-        SAXXParser<TestableObject> parser = factory.createXmlParser(clazz);
+    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected, String xmlString) throws SAXXParserException {
+        SAXXParser<? extends TestableObject> parser = factory.createXmlParser(clazz);
         TestableObject response = parser.parse("<test>" + xmlString + "</test>");
         assertEquals(expected, response.getTest());
     }

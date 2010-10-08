@@ -20,13 +20,13 @@ import java.util.List;
 import static org.apache.commons.io.IOUtils.toInputStream;
 
 public class SAXXParserFactory {
-    private PrimitiveFieldParserFactory primitiveFieldParserFactory;
+    private final PrimitiveFieldParserFactory primitiveFieldParserFactory;
 
     public SAXXParserFactory() {
         primitiveFieldParserFactory = new PrimitiveFieldParserFactory();
     }
 
-    public <T extends Object> SAXXParser<T> createXmlParser(Class<T> clazz) {
+    public <T> SAXXParser<T> createXmlParser(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Could not create parser for null class");
         }
@@ -35,18 +35,17 @@ public class SAXXParserFactory {
         for (Field iteratorField : clazz.getDeclaredFields()) {
             if (iteratorField.isAnnotationPresent(ParseFromXmlWithXPath.class)) {
                 try {
-                    final Field field = iteratorField;
-                    final ParseFromXmlWithXPath annotation = field.getAnnotation(ParseFromXmlWithXPath.class);
+                    final ParseFromXmlWithXPath annotation = iteratorField.getAnnotation(ParseFromXmlWithXPath.class);
                     final XPath xPath = XPath.newInstance(annotation.value());
-                    field.setAccessible(true);
+                    iteratorField.setAccessible(true);
 
-                    FieldParser fieldParser = primitiveFieldParserFactory.createFieldParser(field, xPath);
+                    FieldParser fieldParser = primitiveFieldParserFactory.createFieldParser(iteratorField, xPath);
                     if (fieldParser != null) {
                         parseableElements.add(fieldParser);
                     }
-                    else if (field.getType().isEnum()) {
+                    else if (iteratorField.getType().isEnum()) {
                         Field identifierField = null;
-                        for (Field enumField : field.getType().getDeclaredFields()) {
+                        for (Field enumField : iteratorField.getType().getDeclaredFields()) {
                             enumField.setAccessible(true);
                             if (enumField.isAnnotationPresent(ParseFromXmlEnumIdentifier.class)) {
                                 identifierField = enumField;
@@ -56,16 +55,16 @@ public class SAXXParserFactory {
                             throw new IllegalArgumentException("Enum does not contains @ParseFromXmlEnumIdentifier annotation");
                         }
                         final Field enumIdentifier = identifierField;
-                        parseableElements.add(new EnumFieldParser(field, xPath, enumIdentifier));
+                        parseableElements.add(new EnumFieldParser(iteratorField, xPath, enumIdentifier));
                     }
-                    else if (List.class.isAssignableFrom(field.getType())) {
-                        Type genericType = field.getGenericType();
+                    else if (List.class.isAssignableFrom(iteratorField.getType())) {
+                        Type genericType = iteratorField.getGenericType();
                         if (genericType instanceof ParameterizedType) {
                             ParameterizedType type = (ParameterizedType) genericType;
                             Type[] generics = type.getActualTypeArguments();
                             if (generics.length >= 1) {
                                 Class elementClazz = (Class) generics[0];
-                                parseableElements.add(new ListFieldParser(field, xPath, elementClazz));
+                                parseableElements.add(new ListFieldParser(iteratorField, xPath, elementClazz));
                             }
                         }
                         else {
@@ -81,9 +80,9 @@ public class SAXXParserFactory {
         return new SAXXParserImpl<T>(clazz, parseableElements);
     }
 
-    private abstract class FieldParser<T extends Object> {
-        protected final Field field;
-        protected final XPath xPath;
+    private abstract class FieldParser<T> {
+        final Field field;
+        final XPath xPath;
 
         public abstract void parseElement(T obj, Object context) throws JDOMException, IllegalAccessException, SAXXParserException;
 
@@ -115,18 +114,16 @@ public class SAXXParserFactory {
         }
     }
 
-    private class ListFieldParser extends FieldParser {
-        private final Class elementClazz;
-        private SAXXParser parser;
+    private class ListFieldParser<T> extends FieldParser {
+        private SAXXParser<T> parser;
         private FieldParser fieldParser;
 
-        private class ObjectWrapper {
-            public Object object;
+        private class ObjectWrapper<T> {
+            public T object;
         }
 
-        public ListFieldParser(Field field, XPath xPath, Class elementClazz) {
+        public ListFieldParser(Field field, XPath xPath, Class<T> elementClazz) {
             super(field, xPath);
-            this.elementClazz = elementClazz;
             try {
                 fieldParser = primitiveFieldParserFactory.createFieldParser(ObjectWrapper.class.getField("object"), XPath.newInstance("."), elementClazz);
             } catch (NoSuchFieldException e) {
@@ -141,10 +138,10 @@ public class SAXXParserFactory {
 
         @Override
         public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SAXXParserException {
-            ObjectWrapper wrapper = new ObjectWrapper();
-            List objList = (List) field.get(obj);
+            ObjectWrapper<T> wrapper = new ObjectWrapper<T>();
+            List<T> objList = (List<T>) field.get(obj);
             if (objList == null) {
-                objList = new ArrayList();
+                objList = new ArrayList<T>();
                 field.set(obj, objList);
             }
             List<Element> list = xPath.selectNodes(doc);
@@ -153,7 +150,7 @@ public class SAXXParserFactory {
                     fieldParser.parseElement(wrapper, element);
                     objList.add(wrapper.object);
                 } else if (parser != null) {
-                    Object returnObj = parser.parse(element);
+                    T returnObj = parser.parse(element);
                     objList.add(returnObj);
                 }
             }
@@ -161,7 +158,7 @@ public class SAXXParserFactory {
     }
 
     private class PrimitiveFieldParserFactory {
-        private HashMap<Class, Class<FieldParser>> parserMap;
+        private final HashMap<Class, Class<FieldParser>> parserMap;
 
         PrimitiveFieldParserFactory() {
             parserMap = new HashMap<Class, Class<FieldParser>>();
@@ -201,8 +198,8 @@ public class SAXXParserFactory {
             }
         }
 
-        private abstract class PrimitiveFieldParser<T extends Object> extends FieldParser {
-            protected PrimitiveFieldParser(Field field, XPath xPath) {
+        private abstract class PrimitiveFieldParser<T> extends FieldParser {
+            PrimitiveFieldParser(Field field, XPath xPath) {
                 super(field, xPath);
             }
         }
@@ -385,7 +382,7 @@ public class SAXXParserFactory {
         }
 
         private T _parse(Object context) {
-            T returnObject = null;
+            T returnObject;
             try {
                 returnObject = clazz.newInstance();
                 for (FieldParser action : parseableElements) {

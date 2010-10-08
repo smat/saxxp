@@ -19,7 +19,7 @@ public class SAXXParserFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenErrorsInXPath() {
-        SAXXParser parser = factory.createXmlParser(ErrornousXPathTestObj.class);
+        factory.createXmlParser(ErrornousXPathTestObj.class);
     }
 
     public static class ErrornousXPathTestObj implements TestableObject<Integer> {
