@@ -7,7 +7,7 @@
     <version>0.1-SNAPSHOT</version>
     <name>Simple Annotation XPath XML Parser</name>
     <description>
-        Simple Annotation XPath XML Parser is used to parse XML to POJO using java annotations
+        Simple Annotation XPath XML Parser is used to parse XML to POJO using Java annotations
     </description>
     <url>http://github.com/smat/saxxp</url>
 

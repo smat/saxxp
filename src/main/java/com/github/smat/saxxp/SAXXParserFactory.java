@@ -19,6 +19,9 @@ import java.util.List;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
 
+/**
+ * Factory to create XML Parsers
+ */
 public class SAXXParserFactory {
     private final PrimitiveFieldParserFactory primitiveFieldParserFactory;
 
@@ -26,6 +29,12 @@ public class SAXXParserFactory {
         primitiveFieldParserFactory = new PrimitiveFieldParserFactory();
     }
 
+    /**
+     * Creates a new parser
+     * @param clazz The class to be parsed
+     * @param <T> The class to be parsed
+     * @return SAXXParser
+     */
     public <T> SAXXParser<T> createXmlParser(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Could not create parser for null class");
@@ -362,7 +371,7 @@ public class SAXXParserFactory {
         }
     }
 
-    private static class SAXXParserImpl<T extends Object> implements SAXXParser<T> {
+    private static class SAXXParserImpl<T> implements SAXXParser<T> {
         private final Class<T> clazz;
         private final List<FieldParser> parseableElements;
         private Constructor constructor;
