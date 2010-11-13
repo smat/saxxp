@@ -63,6 +63,36 @@ public class ParserFactoryCollectionFieldsTest {
         assertEquals(2d, response.getTest().get(1), 0.1);
     }
 
+    @Test
+    public void shouldParseArrayOfString() {
+        Parser<ArrayOfStringTestObj> parser = factory.createXmlParser(ArrayOfStringTestObj.class);
+        String xml = "<test><array>A</array><array>B</array></test>";
+        ArrayOfStringTestObj response = parser.parse(xml);
+        assertEquals("A", response.getTest()[0]);
+        assertEquals("B", response.getTest()[1]);
+    }
+
+    @Test
+    public void shouldParseArrayOfInts() throws SaxxpException {
+        Parser<ArrayOfIntsTestObj> parser = factory.createXmlParser(ArrayOfIntsTestObj.class);
+        String xml = "<test><array>1</array><array>2</array></test>";
+        ArrayOfIntsTestObj response = parser.parse(xml);
+        assertEquals(1, (int) response.getTest()[0]);
+        assertEquals(2, (int) response.getTest()[1]);
+    }
+
+    @Test
+    public void shouldParseArrayOfXmlAnnotatedClass() throws SaxxpException {
+        Parser<ArrayOfAnnotatedClassTestObj> parser = factory.createXmlParser(ArrayOfAnnotatedClassTestObj.class);
+        String xml = "<test><array><string>A</string><int>1</int></array><array><string>B</string><int>2</int></array></test>";
+        ArrayOfAnnotatedClassTestObj response = parser.parse(xml);
+        Assert.assertEquals(SeveralAnnotatedFieldsTestObject.class, response.getTest()[0].getClass());
+        assertEquals("A", response.getTest()[0].getTest());
+        assertEquals(1, response.getTest()[0].getTestInt());
+        assertEquals("B", response.getTest()[1].getTest());
+        assertEquals(2, response.getTest()[1].getTestInt());
+    }
+
     public static class ListOfStringsTestObj implements TestableObject<List> {
         @XPath("/test/array")
         private ArrayList<String> test = new ArrayList<String>();
@@ -116,6 +146,28 @@ public class ParserFactoryCollectionFieldsTest {
 
         public int getTestInt() {
             return testInt;
+        }
+    }
+
+    public static class ArrayOfStringTestObj implements TestableObject<String[]>{
+        @XPath("/test/array")
+        String[] test;
+        public String[] getTest() {
+            return test;
+        }
+    }
+    public static class ArrayOfIntsTestObj implements TestableObject<Integer[]>{
+        @XPath("/test/array")
+        Integer[] test;
+        public Integer[] getTest() {
+            return test;
+        }
+    }
+    public static class ArrayOfAnnotatedClassTestObj implements TestableObject<SeveralAnnotatedFieldsTestObject[]>{
+        @XPath("/test/array")
+        SeveralAnnotatedFieldsTestObject[] test;
+        public SeveralAnnotatedFieldsTestObject[] getTest() {
+            return test;
         }
     }
 }

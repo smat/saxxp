@@ -60,10 +60,13 @@ public class ParserFactory {
                             }
                         }
                         if (identifierField == null) {
-                            throw new IllegalArgumentException("Enum does not contains @ParseFromXmlEnumIdentifier annotation");
+                            throw new IllegalArgumentException("Enum does not contains @XmlEnumIdentifier annotation");
                         }
                         final Field enumIdentifier = identifierField;
                         parseableElements.add(new EnumFieldParser(iteratorField, xPath, enumIdentifier));
+                    }
+                    else if (iteratorField.getType().isArray()) {
+                        parseableElements.add(new ArrayFieldParser(iteratorField, xPath, iteratorField.getType().getComponentType()));
                     }
                     else if (List.class.isAssignableFrom(iteratorField.getType())) {
                         Type genericType = iteratorField.getGenericType();
@@ -126,16 +129,18 @@ public class ParserFactory {
         }
     }
 
-    private class ListFieldParser<T> extends FieldParser {
-        private Parser<T> parser;
-        private FieldParser fieldParser;
+    private abstract class CollectionsFieldParser<T> extends FieldParser {
+        protected Parser<T> parser;
+        protected FieldParser fieldParser;
+        protected final Class<T> elementClazz;
 
-        private class ObjectWrapper<T> {
+        protected class ObjectWrapper<T> {
             public T object;
         }
 
-        public ListFieldParser(Field field, org.jdom.xpath.XPath xPath, Class<T> elementClazz) {
+        public CollectionsFieldParser(Field field, org.jdom.xpath.XPath xPath, Class<T> elementClazz) {
             super(field, xPath);
+            this.elementClazz = elementClazz;
             try {
                 fieldParser = primitiveFieldParserFactory.createFieldParser(ObjectWrapper.class.getField("object"), org.jdom.xpath.XPath.newInstance("."), elementClazz);
             } catch (NoSuchFieldException e) {
@@ -146,6 +151,12 @@ public class ParserFactory {
             if (fieldParser == null) {
                 parser = ParserFactory.this.createXmlParser(elementClazz);
             }
+        }
+    }
+
+    private class ListFieldParser<T> extends CollectionsFieldParser<T> {
+        public ListFieldParser(Field field, org.jdom.xpath.XPath xPath, Class<T> elementClazz) {
+            super(field, xPath, elementClazz);
         }
 
         @Override
@@ -166,6 +177,30 @@ public class ParserFactory {
                     objList.add(returnObj);
                 }
             }
+        }
+    }
+
+    private class ArrayFieldParser<T> extends CollectionsFieldParser<T> {
+        public ArrayFieldParser(Field field, org.jdom.xpath.XPath xPath, Class elementClazz) {
+            super(field, xPath, elementClazz);
+        }
+
+        @Override
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SaxxpException {
+            ObjectWrapper<T> wrapper = new ObjectWrapper<T>();
+            List<Element> list = xPath.selectNodes(doc);
+            T[] objArray = (T[]) Array.newInstance(elementClazz, list.size());
+            for (int i = 0; i <objArray.length; i++) {
+                if (fieldParser != null) {
+                    fieldParser.parseElement(wrapper, list.get(i));
+                    objArray[i] = wrapper.object;
+                }
+                else {
+                    T returnObj = parser.parse(list.get(i));
+                    objArray[i] = returnObj;
+                }
+            }
+            field.set(obj, objArray);
         }
     }
 
