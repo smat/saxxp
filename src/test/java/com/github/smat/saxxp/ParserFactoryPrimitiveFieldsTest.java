@@ -1,47 +1,47 @@
 package com.github.smat.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.smat.saxxp.exception.SAXXParserException;
+import com.github.smat.saxxp.annotation.XPath;
+import com.github.smat.saxxp.exception.SaxxpException;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SAXXParserFactoryPrimitiveFieldsTest {
-    private SAXXParserFactory factory;
+public class ParserFactoryPrimitiveFieldsTest {
+    private ParserFactory factory;
 
     @Before
     public void setup() {
-        factory = new SAXXParserFactory();
+        factory = new ParserFactory();
     }
 
     @Test
-    public void shouldParseInteger() throws SAXXParserException {
+    public void shouldParseInteger() throws SaxxpException {
         testIfParsable(IntegerTestObj.class, 1);
     }
 
     @Test
-    public void shouldSetIntegerToZeroIfFieldIsEmpty() throws SAXXParserException {
+    public void shouldSetIntegerToZeroIfFieldIsEmpty() throws SaxxpException {
         testIfParsable(IntegerTestObj.class, 0, "");
     }
 
     @Test
-    public void shouldParseFloat() throws SAXXParserException {
+    public void shouldParseFloat() throws SaxxpException {
         testIfParsable(FloatTestObj.class, 1.0F);
     }
 
     @Test
-    public void shouldSetFloatToZeroIfFieldIsEmpty() throws SAXXParserException {
+    public void shouldSetFloatToZeroIfFieldIsEmpty() throws SaxxpException {
         testIfParsable(FloatTestObj.class, 0.0F, "");
     }
 
     @Test
-    public void shouldParseDouble() throws SAXXParserException {
+    public void shouldParseDouble() throws SaxxpException {
         testIfParsable(DoubleTestObj.class, 1.0);
     }
 
     @Test
-    public void shouldSetDoubleToZeroIfFieldIsEmpty() throws SAXXParserException {
+    public void shouldSetDoubleToZeroIfFieldIsEmpty() throws SaxxpException {
         testIfParsable(DoubleTestObj.class, 0.0, "");
     }
 
@@ -86,14 +86,14 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     @Test
-    public void shouldParseString() throws SAXXParserException {
+    public void shouldParseString() throws SaxxpException {
         testIfParsable(StringTestObj.class, "test");
     }
 
     @Test
-    public void shouldParseBoolean() throws SAXXParserException {
+    public void shouldParseBoolean() throws SaxxpException {
         BooleanTestObj response;
-        SAXXParser<BooleanTestObj> parser = factory.createXmlParser(BooleanTestObj.class);
+        Parser<BooleanTestObj> parser = factory.createXmlParser(BooleanTestObj.class);
         response = parser.parse("<test>true</test>");
         assertEquals(true, response.getTest());
         response = parser.parse("<test>false</test>");
@@ -108,18 +108,18 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
         assertEquals(false, response.getTest());
     }
 
-    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected) throws SAXXParserException {
+    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected) throws SaxxpException {
         testIfParsable(clazz, expected, expected.toString());
     }
 
-    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected, String xmlString) throws SAXXParserException {
-        SAXXParser<? extends TestableObject> parser = factory.createXmlParser(clazz);
+    private void testIfParsable(Class<? extends TestableObject> clazz, Object expected, String xmlString) throws SaxxpException {
+        Parser<? extends TestableObject> parser = factory.createXmlParser(clazz);
         TestableObject response = parser.parse("<test>" + xmlString + "</test>");
         assertEquals(expected, response.getTest());
     }
 
     public static class IntegerTestObj implements TestableObject<Integer> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private int test;
 
         public Integer getTest() {
@@ -128,7 +128,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class FloatTestObj implements TestableObject<Float> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private float testFloat;
 
         public Float getTest() {
@@ -137,7 +137,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class DoubleTestObj implements TestableObject<Double> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private double testFloat;
 
         public Double getTest() {
@@ -146,7 +146,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class ByteTestObj implements TestableObject<Byte> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private byte testByte;
 
         public Byte getTest() {
@@ -155,7 +155,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class ShortTestObj implements TestableObject<Short> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private short testShort;
 
         public Short getTest() {
@@ -164,7 +164,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class LongTestObj implements TestableObject<Long> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private long testShort;
 
         public Long getTest() {
@@ -173,7 +173,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class CharTestObj implements TestableObject<Character> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private char testShort;
 
         public Character getTest() {
@@ -182,7 +182,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class StringTestObj implements TestableObject<String> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private String test;
         public String getTest() {
             return test;
@@ -190,7 +190,7 @@ public class SAXXParserFactoryPrimitiveFieldsTest {
     }
 
     public static class BooleanTestObj implements TestableObject<Boolean> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private boolean test;
         public Boolean getTest() {
             return test;

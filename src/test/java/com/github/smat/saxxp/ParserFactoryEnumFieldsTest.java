@@ -1,24 +1,24 @@
 package com.github.smat.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlEnumIdentifier;
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.smat.saxxp.exception.SAXXParserException;
+import com.github.smat.saxxp.annotation.XPath;
+import com.github.smat.saxxp.annotation.XmlEnumIdentifier;
+import com.github.smat.saxxp.exception.SaxxpException;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SAXXParserFactoryEnumFieldsTest {
-    private SAXXParserFactory factory;
+public class ParserFactoryEnumFieldsTest {
+    private ParserFactory factory;
 
     @Before
     public void setup() {
-        factory = new SAXXParserFactory();
+        factory = new ParserFactory();
     }
 
     @Test
-    public void shouldParseEnum() throws SAXXParserException {
-        SAXXParser<TestableObject> parser = factory.createXmlParser((Class) EnumTestObj.class);
+    public void shouldParseEnum() throws SaxxpException {
+        Parser<TestableObject> parser = factory.createXmlParser((Class) EnumTestObj.class);
         TestableObject response = parser.parse("<test>" + EnumImpl.VALID + "</test>");
         assertEquals(EnumImpl.VALID, response.getTest());
     }
@@ -29,7 +29,7 @@ public class SAXXParserFactoryEnumFieldsTest {
     }
 
     public static class EnumTestObj implements TestableObject<EnumImpl> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private EnumImpl test;
         public EnumImpl getTest() {
             return test;
@@ -37,7 +37,7 @@ public class SAXXParserFactoryEnumFieldsTest {
     }
 
     public static class ExceptionEnumTestObj implements TestableObject<EnumImplNoAnnotations> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private EnumImplNoAnnotations test;
         public EnumImplNoAnnotations getTest() {
             return test;
@@ -47,7 +47,7 @@ public class SAXXParserFactoryEnumFieldsTest {
     public static enum EnumImpl {
         VALID("V"),
         INVALID("I");
-        @ParseFromXmlEnumIdentifier
+        @XmlEnumIdentifier
         private final String ident;
         EnumImpl(String ident) {
             this.ident = ident;

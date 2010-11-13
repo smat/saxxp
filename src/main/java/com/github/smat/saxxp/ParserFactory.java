@@ -1,14 +1,13 @@
 package com.github.smat.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlEnumIdentifier;
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.smat.saxxp.exception.SAXXParserException;
+import com.github.smat.saxxp.annotation.XPath;
+import com.github.smat.saxxp.annotation.XmlEnumIdentifier;
+import com.github.smat.saxxp.exception.SaxxpException;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +21,10 @@ import static org.apache.commons.io.IOUtils.toInputStream;
 /**
  * Factory to create XML Parsers
  */
-public class SAXXParserFactory {
+public class ParserFactory {
     private final PrimitiveFieldParserFactory primitiveFieldParserFactory;
 
-    public SAXXParserFactory() {
+    public ParserFactory() {
         primitiveFieldParserFactory = new PrimitiveFieldParserFactory();
     }
 
@@ -35,17 +34,17 @@ public class SAXXParserFactory {
      * @param <T> The class to be parsed
      * @return SAXXParser
      */
-    public <T> SAXXParser<T> createXmlParser(Class<T> clazz) {
+    public <T> Parser<T> createXmlParser(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Could not create parser for null class");
         }
         final List<FieldParser> parseableElements = new ArrayList<FieldParser>();
 
         for (Field iteratorField : clazz.getDeclaredFields()) {
-            if (iteratorField.isAnnotationPresent(ParseFromXmlWithXPath.class)) {
+            if (iteratorField.isAnnotationPresent(XPath.class)) {
                 try {
-                    final ParseFromXmlWithXPath annotation = iteratorField.getAnnotation(ParseFromXmlWithXPath.class);
-                    final XPath xPath = XPath.newInstance(annotation.value());
+                    final XPath annotation = iteratorField.getAnnotation(XPath.class);
+                    final org.jdom.xpath.XPath xPath = org.jdom.xpath.XPath.newInstance(annotation.value());
                     iteratorField.setAccessible(true);
 
                     FieldParser fieldParser = primitiveFieldParserFactory.createFieldParser(iteratorField, xPath);
@@ -56,7 +55,7 @@ public class SAXXParserFactory {
                         Field identifierField = null;
                         for (Field enumField : iteratorField.getType().getDeclaredFields()) {
                             enumField.setAccessible(true);
-                            if (enumField.isAnnotationPresent(ParseFromXmlEnumIdentifier.class)) {
+                            if (enumField.isAnnotationPresent(XmlEnumIdentifier.class)) {
                                 identifierField = enumField;
                             }
                         }
@@ -86,16 +85,20 @@ public class SAXXParserFactory {
             }
         }
 
-        return new SAXXParserImpl<T>(clazz, parseableElements);
+        return new ParserImpl<T>(clazz, parseableElements);
+    }
+
+    public <T> Parser<List<T>> createXmlListParser(Class<T> clazz, String XPathForList) {
+        return null;
     }
 
     private abstract class FieldParser<T> {
         final Field field;
-        final XPath xPath;
+        final org.jdom.xpath.XPath xPath;
 
-        public abstract void parseElement(T obj, Object context) throws JDOMException, IllegalAccessException, SAXXParserException;
+        public abstract void parseElement(T obj, Object context) throws JDOMException, IllegalAccessException, SaxxpException;
 
-        public FieldParser(Field field, XPath xPath) {
+        public FieldParser(Field field, org.jdom.xpath.XPath xPath) {
             this.field = field;
             this.xPath = xPath;
         }
@@ -104,7 +107,7 @@ public class SAXXParserFactory {
     private class EnumFieldParser extends FieldParser {
         private final Field enumIdentifier;
 
-        public EnumFieldParser(Field field, XPath xPath, Field enumIdentifier) {
+        public EnumFieldParser(Field field, org.jdom.xpath.XPath xPath, Field enumIdentifier) {
             super(field, xPath);
             this.enumIdentifier = enumIdentifier;
         }
@@ -124,29 +127,29 @@ public class SAXXParserFactory {
     }
 
     private class ListFieldParser<T> extends FieldParser {
-        private SAXXParser<T> parser;
+        private Parser<T> parser;
         private FieldParser fieldParser;
 
         private class ObjectWrapper<T> {
             public T object;
         }
 
-        public ListFieldParser(Field field, XPath xPath, Class<T> elementClazz) {
+        public ListFieldParser(Field field, org.jdom.xpath.XPath xPath, Class<T> elementClazz) {
             super(field, xPath);
             try {
-                fieldParser = primitiveFieldParserFactory.createFieldParser(ObjectWrapper.class.getField("object"), XPath.newInstance("."), elementClazz);
+                fieldParser = primitiveFieldParserFactory.createFieldParser(ObjectWrapper.class.getField("object"), org.jdom.xpath.XPath.newInstance("."), elementClazz);
             } catch (NoSuchFieldException e) {
-                throw new SAXXParserException("Could not create List parser", e);
+                throw new SaxxpException("Could not create List parser", e);
             } catch (JDOMException e) {
-                throw new SAXXParserException("Could not create new XPath for List parser", e);
+                throw new SaxxpException("Could not create new XPath for List parser", e);
             }
             if (fieldParser == null) {
-                parser = SAXXParserFactory.this.createXmlParser(elementClazz);
+                parser = ParserFactory.this.createXmlParser(elementClazz);
             }
         }
 
         @Override
-        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SAXXParserException {
+        public void parseElement(Object obj, Object doc) throws JDOMException, IllegalAccessException, SaxxpException {
             ObjectWrapper<T> wrapper = new ObjectWrapper<T>();
             List<T> objList = (List<T>) field.get(obj);
             if (objList == null) {
@@ -188,33 +191,33 @@ public class SAXXParserFactory {
             }
         }
 
-        public FieldParser createFieldParser(Field field, XPath xPath) {
+        public FieldParser createFieldParser(Field field, org.jdom.xpath.XPath xPath) {
             return createFieldParser(field, xPath, field.getType());
         }
 
-        public FieldParser createFieldParser(Field field, XPath xPath, Class clazz) {
+        public FieldParser createFieldParser(Field field, org.jdom.xpath.XPath xPath, Class clazz) {
             Class<FieldParser> fieldParserClass = parserMap.get(clazz);
             if (fieldParserClass == null) {
                 return null;
             }
             try {
-                Constructor<FieldParser> parserConstructor = fieldParserClass.getDeclaredConstructor(PrimitiveFieldParserFactory.class, Field.class, XPath.class);
+                Constructor<FieldParser> parserConstructor = fieldParserClass.getDeclaredConstructor(PrimitiveFieldParserFactory.class, Field.class, org.jdom.xpath.XPath.class);
                 return parserConstructor.newInstance(this, field, xPath);
             } catch (NoSuchMethodException e) {
-                throw new SAXXParserException("Could not find constructor for " + fieldParserClass, e);
+                throw new SaxxpException("Could not find constructor for " + fieldParserClass, e);
             } catch (Exception e) {
-                throw new SAXXParserException("Could not create new parser for " + field.getType(), e);
+                throw new SaxxpException("Could not create new parser for " + field.getType(), e);
             }
         }
 
         private abstract class PrimitiveFieldParser<T> extends FieldParser {
-            PrimitiveFieldParser(Field field, XPath xPath) {
+            PrimitiveFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
         }
 
         private class IntegerFieldParser extends PrimitiveFieldParser<Integer> {
-            public IntegerFieldParser(Field field, XPath xPath) {
+            public IntegerFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -232,7 +235,7 @@ public class SAXXParserFactory {
         }
 
         private class FloatFieldParser extends PrimitiveFieldParser<Float> {
-            public FloatFieldParser(Field field, XPath xPath) {
+            public FloatFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -250,7 +253,7 @@ public class SAXXParserFactory {
         }
 
         private class DoubleFieldParser extends PrimitiveFieldParser<Double> {
-            public DoubleFieldParser(Field field, XPath xPath) {
+            public DoubleFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -268,7 +271,7 @@ public class SAXXParserFactory {
         }
 
         private class ByteFieldParser extends PrimitiveFieldParser<Byte> {
-            public ByteFieldParser(Field field, XPath xPath) {
+            public ByteFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -286,7 +289,7 @@ public class SAXXParserFactory {
         }
 
         private class ShortFieldParser extends PrimitiveFieldParser<Short> {
-            public ShortFieldParser(Field field, XPath xPath) {
+            public ShortFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -304,7 +307,7 @@ public class SAXXParserFactory {
         }
 
         private class LongFieldParser extends PrimitiveFieldParser<Long> {
-            public LongFieldParser(Field field, XPath xPath) {
+            public LongFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -322,7 +325,7 @@ public class SAXXParserFactory {
         }
 
         private class CharFieldParser extends PrimitiveFieldParser<Character> {
-            public CharFieldParser(Field field, XPath xPath) {
+            public CharFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -340,7 +343,7 @@ public class SAXXParserFactory {
         }
 
         private class BooleanFieldParser extends PrimitiveFieldParser<Boolean> {
-            public BooleanFieldParser(Field field, XPath xPath) {
+            public BooleanFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -358,7 +361,7 @@ public class SAXXParserFactory {
         }
 
         private class StringFieldParser extends PrimitiveFieldParser<String> {
-            public StringFieldParser(Field field, XPath xPath) {
+            public StringFieldParser(Field field, org.jdom.xpath.XPath xPath) {
                 super(field, xPath);
             }
 
@@ -371,12 +374,12 @@ public class SAXXParserFactory {
         }
     }
 
-    private static class SAXXParserImpl<T> implements SAXXParser<T> {
+    private static class ParserImpl<T> implements Parser<T> {
         private final Class<T> clazz;
         private final List<FieldParser> parseableElements;
         private Constructor constructor;
 
-        public SAXXParserImpl(Class<T> clazz, List<FieldParser> parseableElements) {
+        public ParserImpl(Class<T> clazz, List<FieldParser> parseableElements) {
             this.clazz = clazz;
             this.parseableElements = parseableElements;
             Constructor<?>[] constructors = clazz.getConstructors();
@@ -398,11 +401,11 @@ public class SAXXParserFactory {
                     action.parseElement(returnObject, context);
                 }
             } catch (JDOMException e) {
-                throw new SAXXParserException("Could not parse XML using XPath", e);
+                throw new SaxxpException("Could not parse XML using XPath", e);
             } catch (IllegalAccessException e) {
-                throw new SAXXParserException("Could not access field in object", e);
+                throw new SaxxpException("Could not access field in object", e);
             } catch (InstantiationException e) {
-                throw new SAXXParserException("Could not create new instance of object", e);
+                throw new SaxxpException("Could not create new instance of object", e);
             }
             return returnObject;
         }
@@ -420,9 +423,9 @@ public class SAXXParserFactory {
                 Document doc = new SAXBuilder().build(stream);
                 return _parse(doc);
             } catch (JDOMException e) {
-                throw new SAXXParserException("Could not parse input XML", e);
+                throw new SaxxpException("Could not parse input XML", e);
             } catch (IOException e) {
-                throw new SAXXParserException("Could not read XML stream", e);
+                throw new SaxxpException("Could not read XML stream", e);
             }
         }
     }

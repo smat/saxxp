@@ -1,15 +1,15 @@
 package com.github.smat.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
+import com.github.smat.saxxp.annotation.XPath;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SAXXParserFactoryTest {
-    private SAXXParserFactory factory;
+public class ParserFactoryTest {
+    private ParserFactory factory;
 
     @Before
     public void setup() {
-        factory = new SAXXParserFactory();
+        factory = new ParserFactory();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -23,7 +23,7 @@ public class SAXXParserFactoryTest {
     }
 
     public static class ErrornousXPathTestObj implements TestableObject<Integer> {
-        @ParseFromXmlWithXPath("////asdf")
+        @XPath("////asdf")
         private int test;
         public Integer getTest() {
             return test;

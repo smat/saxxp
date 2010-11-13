@@ -1,7 +1,7 @@
 package com.github.smat.saxxp;
 
-import com.github.smat.saxxp.annotation.ParseFromXmlWithXPath;
-import com.github.smat.saxxp.exception.SAXXParserException;
+import com.github.smat.saxxp.annotation.XPath;
+import com.github.smat.saxxp.exception.SaxxpException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,12 +11,12 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class SAXXParserFactoryCollectionFieldsTest {
-    private SAXXParserFactory factory;
+public class ParserFactoryCollectionFieldsTest {
+    private ParserFactory factory;
 
     @Before
     public void setup() {
-        factory = new SAXXParserFactory();
+        factory = new ParserFactory();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -25,8 +25,8 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     @Test
-    public void shouldParseListOfStrings() throws SAXXParserException {
-        SAXXParser<ListOfStringsTestObj> parser = factory.createXmlParser(ListOfStringsTestObj.class);
+    public void shouldParseListOfStrings() throws SaxxpException {
+        Parser<ListOfStringsTestObj> parser = factory.createXmlParser(ListOfStringsTestObj.class);
         String xml = "<test><array>A</array><array>B</array></test>";
         ListOfStringsTestObj response = parser.parse(xml);
         assertEquals("A", response.getTest().get(0));
@@ -34,8 +34,8 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     @Test
-    public void shouldParseListOfInts() throws SAXXParserException {
-        SAXXParser<ListOfIntsTestObj> parser = factory.createXmlParser(ListOfIntsTestObj.class);
+    public void shouldParseListOfInts() throws SaxxpException {
+        Parser<ListOfIntsTestObj> parser = factory.createXmlParser(ListOfIntsTestObj.class);
         String xml = "<test><array>1</array><array>2</array></test>";
         ListOfIntsTestObj response = parser.parse(xml);
         assertEquals(1, (int) response.getTest().get(0));
@@ -43,8 +43,8 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     @Test
-    public void shouldParseListOfXmlAnnotatedClass() throws SAXXParserException {
-        SAXXParser<ListOfAnnotatedClassTestObj> parser = factory.createXmlParser(ListOfAnnotatedClassTestObj.class);
+    public void shouldParseListOfXmlAnnotatedClass() throws SaxxpException {
+        Parser<ListOfAnnotatedClassTestObj> parser = factory.createXmlParser(ListOfAnnotatedClassTestObj.class);
         String xml = "<test><array><string>A</string><int>1</int></array><array><string>B</string><int>2</int></array></test>";
         ListOfAnnotatedClassTestObj response = parser.parse(xml);
         Assert.assertEquals(SeveralAnnotatedFieldsTestObject.class, response.getTest().get(0).getClass());
@@ -56,7 +56,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
 
     @Test
     public void shouldCreateNewArrayListIfListIsNullObject() {
-        SAXXParser<NullListTestObject> parser = factory.createXmlParser(NullListTestObject.class);
+        Parser<NullListTestObject> parser = factory.createXmlParser(NullListTestObject.class);
         String xml = "<test><array>1</array><array>2</array></test>";
         NullListTestObject response = parser.parse(xml);
         assertEquals(1d, response.getTest().get(0), 0.1);
@@ -64,7 +64,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     public static class ListOfStringsTestObj implements TestableObject<List> {
-        @ParseFromXmlWithXPath("/test/array")
+        @XPath("/test/array")
         private ArrayList<String> test = new ArrayList<String>();
 
         public ArrayList<String> getTest() {
@@ -72,7 +72,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
         }
     }
     public static class ListOfIntsTestObj implements TestableObject<List> {
-        @ParseFromXmlWithXPath("/test/array")
+        @XPath("/test/array")
         private ArrayList<Integer> test = new ArrayList<Integer>();
 
         public ArrayList<Integer> getTest() {
@@ -81,7 +81,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     public static class UndefinedListTestObj implements TestableObject<List> {
-        @ParseFromXmlWithXPath("/test")
+        @XPath("/test")
         private List test = new ArrayList();
         public List getTest() {
             return test;
@@ -89,7 +89,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     public static class ListOfAnnotatedClassTestObj implements TestableObject<List<SeveralAnnotatedFieldsTestObject>> {
-        @ParseFromXmlWithXPath("/test/array")
+        @XPath("/test/array")
         private List<SeveralAnnotatedFieldsTestObject> list = new ArrayList<SeveralAnnotatedFieldsTestObject>();
         public List<SeveralAnnotatedFieldsTestObject> getTest() {
             return list;
@@ -97,7 +97,7 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     public static class NullListTestObject implements TestableObject<List<Double>> {
-        @ParseFromXmlWithXPath("/test/array")
+        @XPath("/test/array")
         private List<Double> test;
         public List<Double> getTest() {
             return test;
@@ -105,9 +105,9 @@ public class SAXXParserFactoryCollectionFieldsTest {
     }
 
     public static class SeveralAnnotatedFieldsTestObject {
-        @ParseFromXmlWithXPath("string")
+        @XPath("string")
         private String test;
-        @ParseFromXmlWithXPath("int")
+        @XPath("int")
         private int testInt;
 
         public String getTest() {

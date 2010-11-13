@@ -8,11 +8,11 @@ of the class derived from a XML document. See the example below.
 Example
 -------
         class DomainClass {
-            @ParseFromXmlWithXPath("//tagname")
+            @XPath("//tagname")
             private int variabel;
             public int getVariable() { return variabel; }
         }
-        SAXXParser<DomainClass> parser = (new SAXXParserFactory()).createXmlParser(DomainClass.class);
+        Parser<DomainClass> parser = (new ParserFactory()).createXmlParser(DomainClass.class);
         DomainClass domainClass = parser.parse("<tagname>2</tagname>");
 
 Motivation
