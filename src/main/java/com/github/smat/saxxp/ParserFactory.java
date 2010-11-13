@@ -32,7 +32,7 @@ public class ParserFactory {
      * Creates a new parser
      * @param clazz The class to be parsed
      * @param <T> The class to be parsed
-     * @return SAXXParser
+     * @return Parser
      */
     public <T> Parser<T> createXmlParser(Class<T> clazz) {
         if (clazz == null) {
